@@ -34,7 +34,12 @@ vendor/lib64/libkeystore-wifi-hidl.so
 vendor/lib64/libpuresoftkeymasterdevice.so
 vendor/lib64/lib_android_keymaster_keymint_utils.so
 vendor/lib64/vendor.samsung.hardware.security.fkeymaster-V1-ndk_platform.so
-
+vendor/lib64/libskeymint10device.so
+vendor/lib64/libskeymint_cli.so
+vendor/lib64/libkeymint.so
+vendor/etc/init/android.hardware.security.keymint-service.rc
+vendor/bin/hw/android.hardware.security.keymint-service
+vendor/lib64/vendor.samsung.hardware.keymint-V1-ndk_platform.so
 
 # TEE
 vendor/lib64/libTEECommon.so
