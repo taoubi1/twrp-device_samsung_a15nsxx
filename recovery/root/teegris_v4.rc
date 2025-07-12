@@ -14,12 +14,18 @@ on post-fs
     write /proc/iccc_ready 1
     wait_for_prop vendor.tzts_daemon Ready
 
+    mkdir /mnt/vendor/efs/DAK 0775 system system
+    restorecon --recursive --force /mnt/vendor/efs/DAK
+    chown system system /mnt/vendor/efs/DAK/gakkeybox
+    chmod 0644 /mnt/vendor/efs/DAK/gakkeybox
+
 on post-fs-data
+    mkdir /data/vendor/keymaster 0775 system system
     mkdir /data/vendor/tee 0700 system system
     mkdir /data/vendor/gatekeeper 0770 root root
 
 on boot
-    start health
+    start health-hal-2-1-samsung
 
 service tz_service /vendor/bin/tzdaemon
     class core
@@ -35,40 +41,39 @@ service tzts_service /vendor/bin/tzts_daemon
     disabled
     seclabel u:r:recovery:s0
 
-service keymint /vendor/bin/hw/android.hardware.security.keymint-service
-    interface android.hardware.keymaster@4.1::IKeymasterDevice default
+service vendor.keymint-default /vendor/bin/hw/android.hardware.security.keymint-service
     class hal
     user root
     group root drmrpc
     disabled
     seclabel u:r:recovery:s0
 
-service fkeymaster /vendor/bin/vendor.samsung.hardware.security.fkeymaster-service
+service vendor.fkeymaster-default /vendor/bin/vendor.samsung.hardware.security.fkeymaster-service
     interface aidl vendor.samsung.hardware.security.fkeymaster.ISehFkeymaster/default
     class early_hal
     user root
     group root
     seclabel u:r:recovery:s0
 
-service gatekeeper /vendor/bin/hw/android.hardware.gatekeeper@1.0-service
+service vendor.gatekeeper-1-0 /vendor/bin/hw/android.hardware.gatekeeper@1.0-service
     interface android.hardware.gatekeeper@1.0::IGatekeeper default
     class hal
     user root
     group root 5678
     seclabel u:r:recovery:s0
 
-service health /vendor/bin/hw/android.hardware.health@2.1-service-samsung
-    class hal
-    user root
-    group root
-    capabilities WAKE_ALARM BLOCK_SUSPEND
+service health-hal-2-1-samsung /vendor/bin/hw/android.hardware.health@2.1-service-samsung
+    class hal charger
+    user system
+    group system
+    capabilities WAKE_ALARM
     file /dev/kmsg w
     seclabel u:r:recovery:s0
 
 on property:crypto.ready=1
-    start keymint
-    start fkeymaster
-    start gatekeeper
+    start vendor.keymint-default
+    start vendor.fkeymaster-default
+    start vendor.gatekeeper-1-0
 
 on property:hwservicemanager.ready=true
     start tz_service
@@ -77,20 +82,20 @@ on property:hwservicemanager.ready=true
 on property:ro.crypto.state=unsupported
     stop tz_service
     stop tzts_service
-    stop keymint
-    stop fkeymaster
-    stop gatekeeper
+    stop vendor.keymint-default
+    stop vendor.fkeymaster-default
+    stop vendor.gatekeeper-1-0
 
 on property:ro.crypto.state=unencrypted
     stop tz_service
     stop tzts_service
-    stop keymint
-    stop fkeymaster
-    stop gatekeeper
+    stop vendor.keymint-default
+    stop vendor.fkeymaster-default
+    stop vendor.gatekeeper-1-0
 
 on property:twrp.all.users.decrypted=true
     stop tz_service
     stop tzts_service
-    stop keymint
-    stop fkeymaster
-    stop gatekeeper
+    stop vendor.keymint-default
+    stop vendor.fkeymaster-default
+    stop vendor.gatekeeper-1-0
